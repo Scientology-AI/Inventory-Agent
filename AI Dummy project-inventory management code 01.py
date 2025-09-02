@@ -30,4 +30,20 @@ if st.button('Process Inventory Data'):
     else:
         st.success('Data processing logic will go here.')
 
-st.download_button('Download Report (will be enabled after processing)', data=None, file_name='inventory_report.csv', disabled=True)
+report_data = None  # Placeholder for your actual report
+
+if report_data is None:
+    st.download_button(
+        'Download Report (will be enabled after processing)',
+        data='',  # Use an empty string instead of None
+        file_name='inventory_report.csv',
+        disabled=True
+    )
+else:
+    st.download_button(
+        'Download Report',
+        data=report_data,
+        file_name='inventory_report.csv',
+        disabled=False
+    )
+
