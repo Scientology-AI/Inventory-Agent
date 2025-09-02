@@ -3,7 +3,7 @@ import pandas as pd
 
 st.set_page_config(page_title='Agentic AI Inventory Management', layout='wide')
 
-st.title('Agentic AI for Inventory Management')
+st.title('Kapil's Agentic AI for Inventory Management')
 st.markdown("""
 This app helps manufacturing companies monitor SKU stock levels, calculate dynamic buffer stock, and recommend manufacturing decisions.
 
