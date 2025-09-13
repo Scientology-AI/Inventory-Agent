@@ -19,10 +19,14 @@ if demand_file and inventory_file:
 
     # Calculate buffer stock
     buffer_stock = {}
-    for sku in demand_df.columns:
-        consumption = demand_df[sku].dropna().tolist()
+for sku in demand_df.columns:
+    consumption = demand_df[sku].dropna().tolist()
+    if len(consumption) >= lead_time:
         rolling_max = max([sum(consumption[i:i+lead_time]) for i in range(len(consumption) - lead_time + 1)])
-        buffer_stock[sku] = rolling_max
+    else:
+        rolling_max = sum(consumption)
+    buffer_stock[sku] = rolling_max
+
 
     # Signal logic
     def get_signal(current, buffer):
