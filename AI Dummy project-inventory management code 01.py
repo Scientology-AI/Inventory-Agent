@@ -28,15 +28,20 @@ if demand_file and inventory_file:
         if demand_df.empty or not isinstance(demand_df, pd.DataFrame):
             st.error("Uploaded demand data is not valid or empty.")
         else:
-            # Calculate buffer stock safely
+            # Calculate buffer stock with warning if lead_time > data length
             buffer_stock = {}
             for sku in demand_df.columns:
                 consumption = demand_df[sku].dropna().tolist()
-                if len(consumption) >= lead_time:
-                    rolling_max = max([sum(consumption[i:i+lead_time]) for i in range(len(consumption) - lead_time + 1)])
+                if len(consumption) < lead_time:
+                    st.warning(
+                        f"Lead time ({lead_time}) is greater than demand data length ({len(consumption)}) for SKU: {sku}. "
+                        "Buffer stock calculation skipped and set to 0."
+                    )
+                    buffer_stock[sku] = 0
                 else:
-                    rolling_max = sum(consumption)
-                buffer_stock[sku] = rolling_max
+                    rolling_sums = [sum(consumption[i:i+lead_time]) for i in range(len(consumption) - lead_time + 1)]
+                    rolling_max = max(rolling_sums)
+                    buffer_stock[sku] = rolling_max
 
             # Signal logic
             def get_signal(current, buffer):
