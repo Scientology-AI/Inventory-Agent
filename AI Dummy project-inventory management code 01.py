@@ -1,49 +1,57 @@
+# streamlit_app.py
+
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title='Agentic AI Inventory Management', layout='wide')
+st.title("Agentic AI: Inventory Signal Dashboard")
 
-st.title('Agentic AI for Inventory Management')
-st.markdown("""
-This app helps manufacturing companies monitor SKU stock levels, calculate dynamic buffer stock, and recommend manufacturing decisions.
+# Upload files
+demand_file = st.file_uploader("Upload Historic Demand Data (CSV)", type="csv")
+inventory_file = st.file_uploader("Upload Current Inventory Data (CSV)", type="csv")
 
-**Features:**
-- Upload daily inventory data
-- Input lead time
-- View inventory status signals
-- Download reports
-""")
+# Input lead time
+lead_time = st.number_input("Enter Standard Lead Time (days)", min_value=1, value=3)
 
-uploaded_file = st.file_uploader('Upload Daily Inventory Data (CSV)', type=['csv'])
+if demand_file and inventory_file:
+    # Read data
+    demand_df = pd.read_csv(demand_file)
+    inventory_df = pd.read_csv(inventory_file)
 
-lead_time = st.number_input('Enter Replenishment Lead Time (days)', min_value=1, step=1, help='Average number of days for replenishment')
+    # Calculate buffer stock
+    buffer_stock = {}
+    for sku in demand_df.columns:
+        consumption = demand_df[sku].dropna().tolist()
+        rolling_max = max([sum(consumption[i:i+lead_time]) for i in range(len(consumption) - lead_time + 1)])
+        buffer_stock[sku] = rolling_max
 
-if uploaded_file is not None:
-    df_inventory = pd.read_csv(uploaded_file)
-    st.write('Preview of Inventory Data:', df_inventory.head())
-else:
-    df_inventory = None
+    # Signal logic
+    def get_signal(current, buffer):
+        if current > buffer:
+            return 'No Action'
+        elif current <= buffer and current > (2/3) * buffer:
+            return 'Green'
+        elif current <= (2/3) * buffer and current > (1/3) * buffer:
+            return 'Yellow'
+        elif current <= (1/3) * buffer and current > 0.05 * buffer:
+            return 'Red'
+        else:
+            return 'Black'
 
-if st.button('Process Inventory Data'):
-    if df_inventory is None:
-        st.error('Please upload daily inventory data to proceed.')
-    else:
-        st.success('Data processing logic will go here.')
+    # Generate output
+    output = []
+    for _, row in inventory_df.iterrows():
+        sku = row['SKU']
+        current = row['Current Stock']
+        buffer = buffer_stock.get(sku, 0)
+        signal = get_signal(current, buffer)
+        output.append({'SKU': sku, 'Current Stock': current, 'Buffer Stock': buffer, 'Signal': signal})
 
-report_data = None  # Placeholder for your actual report
+    output_df = pd.DataFrame(output)
+    st.subheader("Inventory Signal Report")
+    st.dataframe(output_df)
 
-if report_data is None:
-    st.download_button(
-        'Download Report (will be enabled after processing)',
-        data='',  # Use an empty string instead of None
-        file_name='inventory_report.csv',
-        disabled=True
-    )
-else:
-    st.download_button(
-        'Download Report',
-        data=report_data,
-        file_name='inventory_report.csv',
-        disabled=False
-    )
+    # Optional: Download report
+    csv = output_df.to_csv(index=False).encode('utf-8')
+    st.download_button("Download Report", csv, "inventory_signal_report.csv", "text/csv")
+    
 
