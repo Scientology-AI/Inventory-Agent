@@ -51,8 +51,57 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("© 2025 Agentic AI Dashboard by Kapil")
 
-# Main app logic using sidebar inputs
-if demand_file and inventory_file:
+def color_signal(val):
+    color_map = {
+        'No Action': 'white',
+        'Green': '#2ecc71',
+        'Yellow': '#f1c40f',
+        'Red': '#e74c3c',
+        'Black': '#000000',
+    }
+    color = color_map.get(val, 'white')
+    text_color = 'white' if val == 'Black' else 'black'
+    return f'background-color: {color}; color: {text_color}'
+
+def show_dummy_output():
+    st.info("Upload your files to see live results. Meanwhile, here is a sample output.")
+
+    output_df = pd.DataFrame({
+        'SKU': [f'SKU00{i}' for i in range(1,8)],
+        'Current Stock': [150, 40, 10, 80, 200, 20, 5],
+        'Buffer Stock': [100, 50, 30, 70, 150, 25, 10],
+        'Signal': ['Green', 'Yellow', 'Red', 'Green', 'No Action', 'Black', 'Red']
+    })
+
+    tab1, tab2, tab3 = st.tabs(["Inventory Signals", "Visualizations", "Download Report (disabled)"])
+
+    with tab1:
+        st.subheader("Sample Inventory Signal Report")
+        st.dataframe(output_df.style.applymap(color_signal, subset=['Signal']))
+
+    with tab2:
+        st.subheader("Sample Inventory vs Buffer Stock Chart")
+
+        chart_df = output_df.melt(id_vars=['SKU', 'Signal'], 
+                                 value_vars=['Current Stock', 'Buffer Stock'], 
+                                 var_name='Type', value_name='Quantity')
+
+        chart = alt.Chart(chart_df).mark_bar().encode(
+            x=alt.X('SKU', sort=None),
+            y='Quantity',
+            color='Type',
+            tooltip=['SKU', 'Type', 'Quantity', 'Signal']
+        ).interactive()
+
+        st.altair_chart(chart, use_container_width=True)
+
+    with tab3:
+        st.subheader("Download Report")
+        st.info("Upload files to enable download.")
+
+if not demand_file or not inventory_file:
+    show_dummy_output()
+else:
     try:
         # Read data
         demand_df = pd.read_csv(demand_file)
@@ -67,6 +116,7 @@ if demand_file and inventory_file:
 
         if demand_df.empty or not isinstance(demand_df, pd.DataFrame):
             st.error("Uploaded demand data is not valid or empty.")
+            show_dummy_output()
         else:
             # Calculate buffer stock with warning if lead_time > data length
             buffer_stock = {}
@@ -107,19 +157,6 @@ if demand_file and inventory_file:
 
             output_df = pd.DataFrame(output)
 
-            # Color coding signals in DataFrame display
-            def color_signal(val):
-                color_map = {
-                    'No Action': 'white',
-                    'Green': '#2ecc71',
-                    'Yellow': '#f1c40f',
-                    'Red': '#e74c3c',
-                    'Black': '#000000',
-                }
-                color = color_map.get(val, 'white')
-                text_color = 'white' if val == 'Black' else 'black'
-                return f'background-color: {color}; color: {text_color}'
-
             # Prepare CSV for download
             csv = output_df.to_csv(index=False).encode('utf-8')
 
@@ -152,5 +189,3 @@ if demand_file and inventory_file:
 
     except Exception as e:
         st.error(f"Error processing files: {e}")
-else:
-    st.info("Please upload both historic demand and current inventory CSV files to proceed.")
