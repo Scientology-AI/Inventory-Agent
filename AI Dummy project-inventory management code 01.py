@@ -25,7 +25,6 @@ if demand_file and inventory_file:
         for col in demand_df.columns:
             demand_df[col] = pd.to_numeric(demand_df[col], errors='coerce')
 
-        # Verify that demand_df is a valid DataFrame with columns
         if demand_df.empty or not isinstance(demand_df, pd.DataFrame):
             st.error("Uploaded demand data is not valid or empty.")
         else:
@@ -62,8 +61,22 @@ if demand_file and inventory_file:
                 output.append({'SKU': sku, 'Current Stock': current, 'Buffer Stock': buffer, 'Signal': signal})
 
             output_df = pd.DataFrame(output)
+
+            # Color coding signals in DataFrame display
+            def color_signal(val):
+                color_map = {
+                    'No Action': 'white',
+                    'Green': '#2ecc71',
+                    'Yellow': '#f1c40f',
+                    'Red': '#e74c3c',
+                    'Black': '#000000',
+                }
+                color = color_map.get(val, 'white')
+                text_color = 'white' if val == 'Black' else 'black'
+                return f'background-color: {color}; color: {text_color}'
+
             st.subheader("Inventory Signal Report")
-            st.dataframe(output_df)
+            st.dataframe(output_df.style.applymap(color_signal, subset=['Signal']))
 
             # Optional: Download report
             csv = output_df.to_csv(index=False).encode('utf-8')
