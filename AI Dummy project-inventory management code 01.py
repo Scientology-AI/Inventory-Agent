@@ -16,7 +16,10 @@ if demand_file and inventory_file:
     try:
         # Read data
         demand_df = pd.read_csv(demand_file)
+        demand_df.columns = demand_df.columns.str.strip()
+
         inventory_df = pd.read_csv(inventory_file)
+        inventory_df.columns = inventory_df.columns.str.strip()
 
         # Convert demand data to numeric, coercing errors to NaN
         for col in demand_df.columns:
@@ -70,5 +73,3 @@ if demand_file and inventory_file:
         st.error(f"Error processing files: {e}")
 else:
     st.info("Please upload both historic demand and current inventory CSV files to proceed.")
-    
-
