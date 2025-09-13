@@ -1,3 +1,4 @@
+python
 # streamlit_app.py
 
 import streamlit as st
@@ -5,13 +6,19 @@ import pandas as pd
 
 st.title("Agentic AI: Inventory Signal Dashboard")
 
-# Upload files
-demand_file = st.file_uploader("Upload Historic Demand Data (CSV)", type="csv")
-inventory_file = st.file_uploader("Upload Current Inventory Data (CSV)", type="csv")
+# Sidebar for inputs
+with st.sidebar:
+    st.header("Upload & Settings")
 
-# Input lead time
-lead_time = st.number_input("Enter Standard Lead Time (days)", min_value=1, value=3)
+    demand_file = st.file_uploader("Upload Historic Demand Data (CSV)", type="csv")
+    inventory_file = st.file_uploader("Upload Current Inventory Data (CSV)", type="csv")
 
+    lead_time = st.number_input("Enter Standard Lead Time (days)", min_value=1, value=3)
+
+    st.markdown("---")
+    st.markdown("© 2025 Agentic AI Dashboard")
+
+# Main app logic using inputs from sidebar
 if demand_file and inventory_file:
     try:
         # Read data
