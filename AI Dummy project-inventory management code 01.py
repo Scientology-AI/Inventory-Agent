@@ -49,7 +49,7 @@ with st.sidebar:
         st.download_button("Download Sample Inventory CSV", inventory_bytes, "sample_inventory.csv", "text/csv")
 
     st.markdown("---")
-    st.markdown("© 2025 Agentic AI Dashboard")
+    st.markdown("<small>created by Kapil</small>", unsafe_allow_html=True)
 
 # Main app logic using sidebar inputs
 if demand_file and inventory_file:
