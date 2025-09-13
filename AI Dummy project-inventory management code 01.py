@@ -6,6 +6,40 @@ import altair as alt
 
 st.title("Agentic AI: Inventory Signal Dashboard")
 
+st.markdown("""
+### How to Use This Dashboard
+
+1. Upload **Historic Demand Data** CSV file containing daily demand values with SKUs as columns.
+2. Upload **Current Inventory Data** CSV file with columns: `SKU` and `Current Stock`.
+3. Set the **Standard Lead Time** in days.
+4. View inventory signals, visualizations, and download the report using the tabs.
+
+**Note:** Sample CSV files are provided below for your reference and testing.
+""")
+
+# Provide sample CSV files for download
+sample_demand_csv = """
+SKU001,SKU002,SKU003,SKU004
+100,50,80,130
+110,60,85,120
+140,40,90,125
+130,55,80,135
+"""
+
+sample_inventory_csv = """
+SKU,Current Stock
+SKU001,200
+SKU002,150
+SKU003,90
+SKU004,300
+"""
+
+demand_bytes = sample_demand_csv.encode('utf-8')
+inventory_bytes = sample_inventory_csv.encode('utf-8')
+
+st.download_button("Download Sample Historic Demand CSV", demand_bytes, "sample_historic_demand.csv", "text/csv")
+st.download_button("Download Sample Inventory CSV", inventory_bytes, "sample_inventory.csv", "text/csv")
+
 # Sidebar for inputs
 with st.sidebar:
     st.header("Upload & Settings")
