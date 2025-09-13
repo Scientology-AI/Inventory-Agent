@@ -2,6 +2,7 @@
 
 import streamlit as st
 import pandas as pd
+import altair as alt
 
 st.title("Agentic AI: Inventory Signal Dashboard")
 
@@ -86,12 +87,35 @@ if demand_file and inventory_file:
                 text_color = 'white' if val == 'Black' else 'black'
                 return f'background-color: {color}; color: {text_color}'
 
-            st.subheader("Inventory Signal Report")
-            st.dataframe(output_df.style.applymap(color_signal, subset=['Signal']))
-
-            # Optional: Download report
+            # Prepare CSV for download
             csv = output_df.to_csv(index=False).encode('utf-8')
-            st.download_button("Download Report", csv, "inventory_signal_report.csv", "text/csv")
+
+            # Tabs for output sections
+            tab1, tab2, tab3 = st.tabs(["Inventory Signals", "Visualizations", "Download Report"])
+
+            with tab1:
+                st.subheader("Inventory Signal Report")
+                st.dataframe(output_df.style.applymap(color_signal, subset=['Signal']))
+
+            with tab2:
+                st.subheader("Inventory vs Buffer Stock Chart")
+
+                chart_df = output_df.melt(id_vars=['SKU', 'Signal'], 
+                                         value_vars=['Current Stock', 'Buffer Stock'], 
+                                         var_name='Type', value_name='Quantity')
+
+                chart = alt.Chart(chart_df).mark_bar().encode(
+                    x=alt.X('SKU', sort=None),
+                    y='Quantity',
+                    color='Type',
+                    tooltip=['SKU', 'Type', 'Quantity', 'Signal']
+                ).interactive()
+
+                st.altair_chart(chart, use_container_width=True)
+
+            with tab3:
+                st.subheader("Download Report")
+                st.download_button("Download Report as CSV", csv, "inventory_signal_report.csv", "text/csv")
 
     except Exception as e:
         st.error(f"Error processing files: {e}")
