@@ -18,6 +18,10 @@ if demand_file and inventory_file:
         demand_df = pd.read_csv(demand_file)
         inventory_df = pd.read_csv(inventory_file)
 
+        # Convert demand data to numeric, coercing errors to NaN
+        for col in demand_df.columns:
+            demand_df[col] = pd.to_numeric(demand_df[col], errors='coerce')
+
         # Verify that demand_df is a valid DataFrame with columns
         if demand_df.empty or not isinstance(demand_df, pd.DataFrame):
             st.error("Uploaded demand data is not valid or empty.")
