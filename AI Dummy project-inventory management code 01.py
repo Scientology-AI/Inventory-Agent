@@ -40,4 +40,13 @@ with st.sidebar:
     with st.expander("How to Use This Dashboard", expanded=True):
         st.markdown("""
         1. Upload **Historic Demand Data** CSV with SKUs as columns and daily demand as rows.
-        2. Upload **Current Inventory Data** CSV with
+        2. Upload **Current Inventory Data** CSV with columns: `SKU` and `Current Stock`.
+        3. Set your **Standard Lead Time** (positive integer).
+        4. Use the tabs on the main page to view signals, charts, and download reports.
+        """)
+
+        st.download_button("Download Sample Historic Demand CSV", demand_bytes, "sample_historic_demand.csv", "text/csv")
+        st.download_button("Download Sample Inventory CSV", inventory_bytes, "sample_inventory.csv", "text/csv")
+
+    st.markdown("---")
+    st.markdown("
